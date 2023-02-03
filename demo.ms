@@ -1,6 +1,8 @@
 
 
-
+/*
+    这是多行注释，必须以/*开头，*/结尾
+*/
 
 
 
@@ -37,10 +39,17 @@ jumpIf 1 @true
 // 如果 data == 0 就跳转到 第2行
 jumpIf 2 data == 0
 
+// 计算，将 testing 设置为 6 * 2 的值
 calc testing = 6 * 2
 
+// 计算，将 testing 设置为 0 ~ 1 的随机数
 calc testing = 6 rand
 
+// 将内存 ram1 中的第 33 格的值读取到 data2 变量
+ramRead data2 = ram1 32
+
+// 将变量 data 的值写到内存 ram1 中的第 32 格
+ramWrite ram1 31 = data
 
 
 

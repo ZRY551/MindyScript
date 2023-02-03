@@ -13,6 +13,8 @@ public class CodeParser {
 
     public boolean debugMode = false;
 
+    public boolean isError = false;
+
     //public HashMap<String,Object> globalVars = new HashMap<>();
 
     public String codeData = "";
@@ -84,10 +86,12 @@ public class CodeParser {
                     String startString = line_spilt[0];
                     if (startString.startsWith("/*")) {
                         this.note = true;
+                        continue;
 
                     }else {
                         if (startString.startsWith("*/")) {
                             this.note = false;
+                            continue;
 
                         }
                     }
@@ -329,7 +333,18 @@ public class CodeParser {
 
 
 
-                        } else {
+                        } else if(startString.equals("ramRead") || startString.equals("readRam")){
+
+
+                            this.writeCode(new String[]{"read",line_spilt[1],line_spilt[3],line_spilt[4]});
+
+                        }else if(startString.equals("ramWrite") || startString.equals("writeRam")){
+
+                            // write val cell index
+                            // ramWrite cell index = val
+                            this.writeCode(new String[]{"write",line_spilt[4],line_spilt[1],line_spilt[2]});
+
+                        }else {
                             //String tempStr = StringTools.Array2String(line_spilt," ",false,0,true);
                             if("\n".equals(temp1) || "\r".equals(temp1) || "".equals(temp1)){
                                 continue;
@@ -352,6 +367,7 @@ public class CodeParser {
 
 
             this.compiledCodeData = this.compiledCodeData.replaceAll("&#endLine#&",String.valueOf(this.compiledLineNow));
+            this.compiledCodeData = this.compiledCodeData + getScriptID();
 
 
 
@@ -366,9 +382,22 @@ public class CodeParser {
 
     }
 
+    public String getScriptID(){
+        String tempStr = "";
+        tempStr = tempStr + "\n";
+        tempStr = tempStr + "set" + " " + "@SCRIPT-ID" + " " + "\"" + StringTools.getRamdomID() + "\"";
+        tempStr = tempStr + "\n";
+
+
+
+
+        return tempStr;
+    }
+
 
 
     public void exception(File file,String str,Exception ex){
+        this.isError = true;
         System.out.println("ERROR : An exception occurred! ");
         System.out.println("At File : " + file.getPath());
         System.out.println("At Line : " + String.valueOf(lineNow));
@@ -397,6 +426,41 @@ public class CodeParser {
         }
         this.compiledCodeData = this.compiledCodeData + strs + "\n";
         compiledLineNow++;
+    }
+
+    public class writeCodeObjects{
+        public String compiledCode = "";
+        public int LineNow = -1;
+
+        public writeCodeObjects(){
+
+        }
+
+        public writeCodeObjects(String p_compiledCode, int p_LineNow){
+            this.compiledCode = p_compiledCode;
+            this.LineNow = p_LineNow;
+
+        }
+
+    }
+
+    public writeCodeObjects writeCodeStr(String compiledCode,int LineNow,String str){
+        compiledCode = compiledCode + str + "\n";
+        int LineNow2 = LineNow + 1;
+        writeCodeObjects wco = new writeCodeObjects(compiledCode,LineNow2);
+        return  wco;
+    }
+
+    public writeCodeObjects writeCodeStr(String compiledCode,int LineNow,String[] stra){
+        String strs = "";
+        for (String str:stra) {
+            strs = strs + str + " ";
+
+        }
+        compiledCode = compiledCode + strs + "\n";
+        int LineNow2 = LineNow + 1;
+        writeCodeObjects wco = new writeCodeObjects(compiledCode,LineNow2);
+        return  wco;
     }
 
 

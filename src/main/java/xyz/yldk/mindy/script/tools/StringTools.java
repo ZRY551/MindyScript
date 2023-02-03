@@ -1,6 +1,7 @@
 package xyz.yldk.mindy.script.tools;
 
 import java.util.ArrayList;
+import java.util.UUID;
 
 public class StringTools {
     public static String Array2String(String[] strs,String spiltStr,boolean removeFirst,int removeNumber,boolean trim){
@@ -34,5 +35,9 @@ public class StringTools {
     public static String Array2String(String[] strs,String spiltStr,boolean removeFirst,int removeNumber){
         return Array2String(strs,spiltStr,removeFirst,removeNumber,false);
 
+    }
+
+    public static String getRamdomID(){
+        return UUID.randomUUID().toString().replaceAll("-","");
     }
 }
