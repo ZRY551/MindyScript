@@ -17,10 +17,14 @@ public class CodeParser {
 
     //public HashMap<String,Object> globalVars = new HashMap<>();
 
+    public HashMap<String,Integer> globalLinesVars = new HashMap<>();
+
     public String codeData = "";
 
 
     public String compiledCodeData = "";
+
+    public String ScriptID = StringTools.getRamdomID();
 
 
 
@@ -117,6 +121,11 @@ public class CodeParser {
 
                         } else if (startString.equals("getLine")) {
                             this.writeCode(new String[]{"set", line_spilt[1], String.valueOf(this.compiledLineNow)});
+
+
+                        }else if (startString.equals("getLineG") || startString.equals("getLineGlobal")) {
+                            //this.writeCode(new String[]{"set", line_spilt[1], String.valueOf(this.compiledLineNow)});
+                            globalLinesVars.put(line_spilt[1],this.compiledLineNow);
 
 
                         }else if (startString.equals("ifEnd") || startString.equals("endIf")) {
@@ -367,7 +376,16 @@ public class CodeParser {
 
 
             this.compiledCodeData = this.compiledCodeData.replaceAll("&#endLine#&",String.valueOf(this.compiledLineNow));
-            this.compiledCodeData = this.compiledCodeData + getScriptID();
+            this.compiledCodeData = this.compiledCodeData.replaceAll("&#scriptID#&",this.ScriptID);
+
+            for (String key : globalLinesVars.keySet()) {
+                this.compiledCodeData = this.compiledCodeData.replaceAll("&#GLine_" + key + "#&",String.valueOf(globalLinesVars.get(key)));
+                this.compiledCodeData = this.compiledCodeData.replaceAll("@=" + key + "",String.valueOf(globalLinesVars.get(key)));
+            }
+
+
+
+            this.compiledCodeData = this.compiledCodeData + getScriptID(this.ScriptID);
 
 
 
@@ -386,6 +404,18 @@ public class CodeParser {
         String tempStr = "";
         tempStr = tempStr + "\n";
         tempStr = tempStr + "set" + " " + "@SCRIPT-ID" + " " + "\"" + StringTools.getRamdomID() + "\"";
+        tempStr = tempStr + "\n";
+
+
+
+
+        return tempStr;
+    }
+
+    public String getScriptID(String ID){
+        String tempStr = "";
+        tempStr = tempStr + "\n";
+        tempStr = tempStr + "set" + " " + "@SCRIPT-ID" + " " + "\"" + ID + "\"";
         tempStr = tempStr + "\n";
 
 

@@ -24,6 +24,12 @@ printMsg message1 "TEST 666"
 // 获取上一行命令在编译后的第几行
 getLine test
 
+// 获取上一行命令在编译后的第几行，设置为全局替换规则
+getLineG wtf
+
+// 调用规则
+setEnabled duo1 @=wtf
+
 // 自带命令兼容，使用自带命令"wait"等待0.5秒
 wait 0.5
 
