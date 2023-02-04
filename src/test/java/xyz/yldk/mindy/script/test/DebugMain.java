@@ -33,6 +33,18 @@ public class DebugMain {
 
 
 
+
+        for (String k:cp.functionCodeData.keySet()
+             ) {
+            System.out.println(k);
+
+        }
+
+        System.out.println(cp.functionCodeData.get("test").CodeData);
+
+
+
+
     }
 }
 

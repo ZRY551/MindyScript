@@ -51,6 +51,10 @@ public class CodeParser {
 
     public boolean inFunction = false;
 
+    public String FunctionNameNow = "";
+
+
+
 
 
 
@@ -88,19 +92,138 @@ public class CodeParser {
 
                 if (line_spilt.length >= 1) {
                     String startString = line_spilt[0];
-                    if (startString.startsWith("/*")) {
+                    if (startString.trim().startsWith("/*")) {
                         this.note = true;
                         continue;
 
                     }else {
-                        if (startString.startsWith("*/")) {
+                        if (startString.trim().startsWith("*/")) {
                             this.note = false;
                             continue;
 
                         }
                     }
+
+                    if(!note){
+                        //String startString = line_spilt[0];
+                        if (startString.startsWith("func")) {
+                            String funcName = line_spilt[1];
+                            /*if(line_spilt.length == 2){
+
+                            }*/
+                            String ftemp0 = thisLine.substring(0,thisLine.length() - 1).trim();
+                            ftemp0 = ftemp0 + " {";
+                            line_spilt = ftemp0.split(" ");
+
+                            String ftemp3 = "";
+                            String[] ftemp2 = funcName.split("\\(");
+                            for (int i = 1; i < (line_spilt.length - 1); i++) {
+                                ftemp3 = ftemp3 + line_spilt[i] + " ";
+
+                            }
+
+
+
+                            if(ftemp2.length >= 2){
+                                /*for (int i = 1; i < (line_spilt.length - 1); i++) {
+
+                                }*/
+                            }
+
+                            String[] ftemp4 = ftemp3.split("\\(");
+
+                            String realFuncName = ftemp4[0];
+
+                            String fArgvs = "";
+
+                            for (int i = 1; i < ftemp4.length; i++) {
+                                fArgvs = fArgvs + ftemp4[i];
+
+                            }
+
+                            String[] fArgvs_spilt = fArgvs.split("\\)");
+                            fArgvs = fArgvs_spilt[0];
+
+
+                            // 此时拆分为 a,b 形式
+
+
+                            realFuncName = realFuncName.trim();
+
+
+
+
+                            this.FunctionNameNow = realFuncName;
+                            // System.out.println(fArgvs);
+                            // 此处得到 a   ,b 形式的字符串
+                            String[] fArgs2 = fArgvs.split(",");
+                            for (int i = 0; i < fArgs2.length; i++) {
+                                fArgs2[i] = fArgs2[i].trim();
+                                // 去除了参数字符串前后的空格，但是保留了参数原本的值
+                            }
+
+
+
+
+
+
+
+
+
+
+                            ScriptFunction sfObj = new ScriptFunction();
+                            sfObj.funcName = realFuncName;
+                            sfObj.funcID = StringTools.getRamdomID();
+
+                            // 将去除空格后的参数列表传入函数对象中
+                            sfObj.Argvs = fArgs2;
+
+                            // 再次遍历数组并为函数参数生成ID
+                            for (int i = 0; i < fArgs2.length; i++) {
+                                // 生成随机ID并以名称存入
+                                sfObj.ArgvsIDMap.put(fArgs2[i],StringTools.getRamdomID());
+
+
+
+                            }
+
+
+                            functionCodeData.put(realFuncName,sfObj);
+
+
+
+
+
+
+
+
+
+
+
+
+                            if(line_spilt[line_spilt.length - 1].equals("{") || thisLine.charAt(thisLine.length() - 1) == '{'){
+                                this.inFunction = true;
+                            }
+
+
+
+                            continue;
+
+                        }else {
+                            if (startString.startsWith("}")) {
+                                if(this.inFunction){
+                                    this.inFunction = false;
+                                    this.FunctionNameNow = "";
+                                }
+
+                                continue;
+
+                            }
+                        }
+                    }
+
                     if(!note) {
-                        if (startString.startsWith("//")) {
+                        if (startString.trim().startsWith("//")) {
                             continue;
                         } else if(startString.equals("\n") || startString.equals("\r")){
                             continue;
@@ -120,12 +243,40 @@ public class CodeParser {
 
 
                         } else if (startString.equals("getLine")) {
-                            this.writeCode(new String[]{"set", line_spilt[1], String.valueOf(this.compiledLineNow)});
+                            if(!this.inFunction) {
+                                this.writeCode(new String[]{"set", line_spilt[1], String.valueOf(this.compiledLineNow)});
+                            }else{
+                                ScriptFunction SfObj = this.functionCodeData.get(this.FunctionNameNow);
+                                if(SfObj != null){
+                                    String fwc_temp_str1 = "@#func-lines=" + StringTools.getRamdomID();
+                                    SfObj.compiledLinesMap.put(fwc_temp_str1,SfObj.compiledLine);
+                                    this.writeCode(new String[]{"set", line_spilt[1], fwc_temp_str1});
+
+                                }
+                            }
 
 
                         }else if (startString.equals("getLineG") || startString.equals("getLineGlobal")) {
                             //this.writeCode(new String[]{"set", line_spilt[1], String.valueOf(this.compiledLineNow)});
                             globalLinesVars.put(line_spilt[1],this.compiledLineNow);
+
+                            if(!this.inFunction) {
+                                globalLinesVars.put(line_spilt[1],this.compiledLineNow);
+                                //this.writeCode(new String[]{"set", line_spilt[1], String.valueOf(this.compiledLineNow)});
+                            }else{
+                                ScriptFunction SfObj = this.functionCodeData.get(this.FunctionNameNow);
+                                if(SfObj != null){
+                                    String fwc_temp_str1 = "@F=" + line_spilt[1];
+
+                                    SfObj.globalLinesVars.put(fwc_temp_str1,SfObj.compiledLine);
+                                    fwc_temp_str1 = "@=" + line_spilt[1];
+                                    SfObj.globalLinesVars.put(fwc_temp_str1,SfObj.compiledLine);
+                                    //this.writeCode(new String[]{"set", line_spilt[1], fwc_temp_str1});
+                                    //globalLinesVars.put(line_spilt[1],this.compiledLineNow + SfObj.compiledLine);
+
+
+                                }
+                            }
 
 
                         }else if (startString.equals("ifEnd") || startString.equals("endIf")) {
@@ -368,6 +519,8 @@ public class CodeParser {
 
                 }
 
+                this.lineNow++;
+
 
             }
 
@@ -378,9 +531,37 @@ public class CodeParser {
             this.compiledCodeData = this.compiledCodeData.replaceAll("&#endLine#&",String.valueOf(this.compiledLineNow));
             this.compiledCodeData = this.compiledCodeData.replaceAll("&#scriptID#&",this.ScriptID);
 
+            for (String key : functionCodeData.keySet()) {
+                ScriptFunction SfObj3 = functionCodeData.get(key);
+                String CodeData = SfObj3.CodeData;
+                this.compiledCodeData = this.compiledCodeData + CodeData;
+                int Save_compiledLineNow = this.compiledLineNow;
+                this.compiledLineNow = this.compiledLineNow + SfObj3.compiledLine;
+                for (String key2 : SfObj3.compiledLinesMap.keySet()) {
+                    int data = SfObj3.compiledLinesMap.get(key2);
+                    this.compiledCodeData = this.compiledCodeData.replaceAll(key2, String.valueOf(data + Save_compiledLineNow));
+                    /*System.out.println(">>>" + key2);
+                    System.out.println(String.valueOf(data + Save_compiledLineNow));*/
+                }
+                for (String key3 : SfObj3.globalLinesVars.keySet()) {
+                    int data = SfObj3.globalLinesVars.get(key3);
+                    this.compiledCodeData = this.compiledCodeData.replaceAll(key3, String.valueOf(data + Save_compiledLineNow));
+                    /*System.out.println(">>>" + key2);
+                    System.out.println(String.valueOf(data + Save_compiledLineNow));*/
+                }
+                this.writeCode(new String[]{"end"});
+            }
+
+
+
             for (String key : globalLinesVars.keySet()) {
-                this.compiledCodeData = this.compiledCodeData.replaceAll("&#GLine_" + key + "#&",String.valueOf(globalLinesVars.get(key)));
-                this.compiledCodeData = this.compiledCodeData.replaceAll("@=" + key + "",String.valueOf(globalLinesVars.get(key)));
+                if(globalLinesVars.get(key) != null){
+                    this.compiledCodeData = this.compiledCodeData.replaceAll("&#GLine_" + key + "#&",String.valueOf(globalLinesVars.get(key)));
+                    this.compiledCodeData = this.compiledCodeData.replaceAll("@=" + key + "",String.valueOf(globalLinesVars.get(key)));
+                }
+
+
+
             }
 
 
@@ -392,7 +573,10 @@ public class CodeParser {
 
 
 
-        } catch (Exception e) {
+        } catch (IndexOutOfBoundsException e){
+            exception(file,"Incorrect code format: missing parameter", e);
+            return;
+        }catch (Exception e) {
             exception(file,"Unknow Java Error", e);
             return;
         }
@@ -430,8 +614,9 @@ public class CodeParser {
         this.isError = true;
         System.out.println("ERROR : An exception occurred! ");
         System.out.println("At File : " + file.getPath());
-        System.out.println("At Line : " + String.valueOf(lineNow));
-        System.out.println("At Char : " + String.valueOf(charNow));
+        System.out.println("At Line : " + String.valueOf(this.lineNow));
+        System.out.println("At Compiled Code Line : " + String.valueOf(this.compiledLineNow));
+        System.out.println("At Char : " + String.valueOf(this.charNow));
         if(ex != null){
 
             System.out.println("Java Exception : " + ex.toString());
@@ -444,8 +629,19 @@ public class CodeParser {
     }
 
     public void writeCode(String str){
-        this.compiledCodeData = this.compiledCodeData + str + "\n";
-        compiledLineNow++;
+        if(this.inFunction){
+            ScriptFunction SfObjWriteTemp = functionCodeData.get(this.FunctionNameNow);
+            if(SfObjWriteTemp != null){
+                SfObjWriteTemp.CodeData = SfObjWriteTemp.CodeData + str + "\n";
+                SfObjWriteTemp.compiledLine++;
+
+            }
+
+        }else{
+            this.compiledCodeData = this.compiledCodeData + str + "\n";
+            compiledLineNow++;
+        }
+
     }
 
     public void writeCode(String[] stra){
@@ -454,8 +650,19 @@ public class CodeParser {
             strs = strs + str + " ";
 
         }
-        this.compiledCodeData = this.compiledCodeData + strs + "\n";
-        compiledLineNow++;
+        if(this.inFunction){
+            ScriptFunction SfObjWriteTemp = functionCodeData.get(this.FunctionNameNow);
+            if(SfObjWriteTemp != null){
+                SfObjWriteTemp.CodeData = SfObjWriteTemp.CodeData + strs + "\n";
+                SfObjWriteTemp.compiledLine++;
+
+            }
+
+        }else{
+            this.compiledCodeData = this.compiledCodeData + strs + "\n";
+            compiledLineNow++;
+        }
+
     }
 
     public class writeCodeObjects{
@@ -493,6 +700,82 @@ public class CodeParser {
         return  wco;
     }
 
+
+    public void writeCodeLocal(String str){
+        this.compiledCodeData = this.compiledCodeData + str + "\n";
+        compiledLineNow++;
+
+    }
+
+    public void writeCodeLocal(String[] stra){
+        String strs = "";
+        for (String str:stra) {
+            strs = strs + str + " ";
+
+        }
+        this.compiledCodeData = this.compiledCodeData + strs + "\n";
+        compiledLineNow++;
+
+
+    }
+
+    public void writeCodeFunctionNow(String str){
+
+        ScriptFunction SfObjWriteTemp = functionCodeData.get(this.FunctionNameNow);
+        if(SfObjWriteTemp != null){
+            SfObjWriteTemp.CodeData = SfObjWriteTemp.CodeData + str + "\n";
+            SfObjWriteTemp.compiledLine++;
+
+        }
+
+
+    }
+
+    public void writeCodeFunctionNow(String[] stra){
+        String strs = "";
+        for (String str:stra) {
+            strs = strs + str + " ";
+
+        }
+        ScriptFunction SfObjWriteTemp = functionCodeData.get(this.FunctionNameNow);
+        if(SfObjWriteTemp != null){
+            SfObjWriteTemp.CodeData = SfObjWriteTemp.CodeData + strs + "\n";
+            SfObjWriteTemp.compiledLine++;
+
+        }
+
+
+    }
+
+
+
+    public void writeCodeFunction(String Name,String str){
+
+        ScriptFunction SfObjWriteTemp = functionCodeData.get(Name);
+        if(SfObjWriteTemp != null){
+            SfObjWriteTemp.CodeData = SfObjWriteTemp.CodeData + str + "\n";
+            SfObjWriteTemp.compiledLine++;
+
+        }
+
+
+    }
+
+    public void writeCodeFunction(String Name,String[] stra){
+        String strs = "";
+        for (String str:stra) {
+            strs = strs + str + " ";
+
+        }
+        ScriptFunction SfObjWriteTemp = functionCodeData.get(Name);
+        if(SfObjWriteTemp != null){
+            SfObjWriteTemp.CodeData = SfObjWriteTemp.CodeData + strs + "\n";
+            SfObjWriteTemp.compiledLine++;
+
+        }
+
+
+    }
 
 
 

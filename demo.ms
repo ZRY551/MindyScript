@@ -58,7 +58,27 @@ ramRead data2 = ram1 32
 ramWrite ram1 31 = data
 
 
+// 定义一个函数
+func test (a,b) {
+    // 函数中使用命令
+    getEnabled switch6 data6
+    getLine d66
+    setEnabled duo13 d66
 
+}
+
+func test2 (a,b) {
+    // 函数中使用命令
+    getEnabled switch8 data8
+    // 获取上一句命令编译后的位置并传入全局
+    getLineG FkPT
+    // 从全局中获取信息
+    setEnabled switch5 @F=FkPT
+
+}
+
+// 函数外使用全局位置参数
+setEnabled switch5 @F=FkPT
 
 
 
