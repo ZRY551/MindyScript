@@ -1,6 +1,8 @@
 package xyz.yldk.mindy.script.objects;
 
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 
 public class ScriptFunction {
     public String funcName = "";
@@ -9,7 +11,14 @@ public class ScriptFunction {
 
     public int useCount = 0;
 
+    public int useCountNever = 0;
+
     public int compiledLine = 0;
+
+    // 程序的主入口
+    public int mainJumpIn = 0;
+
+    public int mainJumpInAtGlobal = 0;
 
     public String[] Argvs = new String[]{};
 
@@ -20,11 +29,24 @@ public class ScriptFunction {
 
     public HashMap<String,Integer> globalLinesVars = new HashMap<>();
 
+    public HashMap<Integer,Integer> returnLinesVars = new HashMap<>();
+
     public String CodeData = "";
+
+
+
+    public int returnLine = 0;
 
 
     public void use(){
         this.useCount++;
+        this.useCountNever++;
+    }
+
+    public void use(int where){
+        this.useCount++;
+        this.useCountNever++;
+        this.returnLinesVars.put(this.useCountNever,where);
     }
 
 }

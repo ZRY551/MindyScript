@@ -6,7 +6,7 @@
 
 
 
-
+end
 
 // getEnabled <建筑物> <变量名>
 // 获取某个建筑的启用状态
@@ -68,6 +68,8 @@ func test (a,b) {
 }
 
 func test2 (a,b) {
+    // @P=<参数名> 来使用函数提供的参数
+    getEnabled switch9 @P=a
     // 函数中使用命令
     getEnabled switch8 data8
     // 获取上一句命令编译后的位置并传入全局
@@ -83,13 +85,21 @@ setEnabled switch5 @F=FkPT
 
 
 
+// 实例：参数传递（无返回值函数）
+func test3(isOpen_bt1,isOpen_door1){
+
+    setEnabled switch1 bt1
+    setEnabled door1 isOpen_door1
+
+}
 
 
 
 
 
+runFunc test3 data1 data2
 
-
+end
 
 
 

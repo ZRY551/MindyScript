@@ -5,6 +5,7 @@ import xyz.yldk.mindy.script.tools.StringTools;
 
 import java.io.*;
 import java.nio.file.Path;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.stream.Stream;
@@ -52,6 +53,11 @@ public class CodeParser {
     public boolean inFunction = false;
 
     public String FunctionNameNow = "";
+
+    public boolean isNeedReturn = false;
+    
+    public int returnJumpLine = 0;
+
 
 
 
@@ -189,6 +195,15 @@ public class CodeParser {
 
 
                             functionCodeData.put(realFuncName,sfObj);
+
+                            for(String str_in_obj : sfObj.Argvs){
+                                this.writeCodeFunctionNow(new String[]{"set", str_in_obj + "=args@function#" + sfObj.funcID, "null"});
+
+                            }
+
+                            this.writeCodeFunctionNow(new String[]{"set", "jump@function#" + sfObj.funcID, "null"});
+
+                            this.writeCodeFunctionNow(new String[]{"set", "uuid@function#" + sfObj.funcID, "\"" + sfObj.funcID +  "\"" });
 
 
 
@@ -504,7 +519,75 @@ public class CodeParser {
                             // ramWrite cell index = val
                             this.writeCode(new String[]{"write",line_spilt[4],line_spilt[1],line_spilt[2]});
 
-                        }else {
+                        }else if(startString.equals("runFunc") || startString.equals("callFunc") || startString.equals("funCall") || startString.equals("funcRun")){
+                            ScriptFunction SfObj4 = functionCodeData.get(line_spilt[1]);
+                            if(SfObj4 != null){
+                                int Plong = SfObj4.Argvs.length;
+
+                                if(Plong <= (line_spilt.length - 2)){
+
+                                    int i1 = 2;
+
+                                    String[] tempvars_ArgvList = SfObj4.Argvs;
+                                    for (String StrObj : tempvars_ArgvList){
+                                        this.writeCode(new String[]{"set",StrObj + "=args@function#" + SfObj4.funcID,line_spilt[i1]});
+                                        i1++;
+
+                                    }
+
+
+                                    this.writeCode(new String[]{"jump","jumpLine@function#" + SfObj4.funcID,"always","null","null"});
+
+                                    this.writeCode(new String[]{"set","@null","null"});
+
+                                    SfObj4.use(this.compiledLineNow);
+
+                                    //SfObj4.returnLines.add(this.compiledLineNow);
+
+                                    /*this.isNeedReturn = true;
+                                    this.returnJumpLine = this.compiledLineNow;*/
+
+
+
+
+
+                                }else{
+                                    exception(file,"Cannot map parameters one by one ! ",null);
+                                    return;
+                                }
+                            }else{
+                                exception(file,"Undefined function '" + line_spilt[1] + "' ! ",null);
+                                return;
+                            }
+
+
+
+
+
+                        } else if(startString.equals("return")){
+                            ScriptFunction SfObj5 = functionCodeData.get(this.FunctionNameNow);
+                            if(this.inFunction){
+                                /*if(this.isNeedReturn){
+                                    this.isNeedReturn = false;
+                                    this.writeCode(new String[]{"jump",String.valueOf(this.returnJumpLine),"always","null","null"});
+
+                                }else{
+                                    exception(file,"You should not return here ! ",null);
+                                }*/
+                                /*if(SfObj5 != null){
+                                    this.writeCode(new String[]{"jump", String.valueOf(SfObj5.returnLine) + "=return@function#" + SfObj5.funcID,"always","null","null"});
+                                    SfObj5.returnLine ++;
+
+                                }*/
+                                // todo
+
+
+                            }else{
+                                exception(file,"Must be in a function to return ! ",null);
+                            }
+
+
+                        } else {
                             //String tempStr = StringTools.Array2String(line_spilt," ",false,0,true);
                             if("\n".equals(temp1) || "\r".equals(temp1) || "".equals(temp1)){
                                 continue;
@@ -530,6 +613,9 @@ public class CodeParser {
 
             this.compiledCodeData = this.compiledCodeData.replaceAll("&#endLine#&",String.valueOf(this.compiledLineNow));
             this.compiledCodeData = this.compiledCodeData.replaceAll("&#scriptID#&",this.ScriptID);
+            this.compiledCodeData = this.compiledCodeData.replaceAll("@#space#@"," ");
+            this.compiledCodeData = this.compiledCodeData.replaceAll("@#newLine#@","\n");
+            this.compiledCodeData = this.compiledCodeData.replaceAll("@#null#@","");
 
             for (String key : functionCodeData.keySet()) {
                 ScriptFunction SfObj3 = functionCodeData.get(key);
@@ -549,6 +635,20 @@ public class CodeParser {
                     /*System.out.println(">>>" + key2);
                     System.out.println(String.valueOf(data + Save_compiledLineNow));*/
                 }
+                String[] temp3 = SfObj3.Argvs;
+                for (String temp4 : temp3){
+                    //System.out.println(">>>>>>>>>>>>>>>>" + temp4);
+                    String temp5 = temp4 + "=args@function#" + SfObj3.funcID;
+                    String temp6 = "@P=" + temp4;
+                    this.compiledCodeData = this.compiledCodeData.replaceAll(temp6, temp5);
+                }
+                String temp7 =  "jumpLine@function#" + SfObj3.funcID;
+
+                this.compiledCodeData = this.compiledCodeData.replaceAll(temp7, String.valueOf(Save_compiledLineNow + SfObj3.mainJumpIn + 3));
+
+
+
+
                 this.writeCode(new String[]{"end"});
             }
 

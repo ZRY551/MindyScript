@@ -40,7 +40,7 @@ public class DebugMain {
 
         }
 
-        System.out.println(cp.functionCodeData.get("test").CodeData);
+        //System.out.println(cp.functionCodeData.get("test").CodeData);
 
 
 
