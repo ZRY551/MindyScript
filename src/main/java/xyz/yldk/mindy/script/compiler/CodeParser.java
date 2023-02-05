@@ -197,13 +197,13 @@ public class CodeParser {
                             functionCodeData.put(realFuncName,sfObj);
 
                             for(String str_in_obj : sfObj.Argvs){
-                                this.writeCodeFunctionNow(new String[]{"set", str_in_obj + "=args@function#" + sfObj.funcID, "null"});
+                                this.writeCodeFunctionNow(new String[]{"set", str_in_obj + "=args@function=" + sfObj.funcID, "null"});
 
                             }
 
-                            this.writeCodeFunctionNow(new String[]{"set", "jump@function#" + sfObj.funcID, "null"});
+                            this.writeCodeFunctionNow(new String[]{"set", "jump@function=" + sfObj.funcID, "null"});
 
-                            this.writeCodeFunctionNow(new String[]{"set", "uuid@function#" + sfObj.funcID, "\"" + sfObj.funcID +  "\"" });
+                            this.writeCodeFunctionNow(new String[]{"set", "uuid@function=" + sfObj.funcID, "\"" + sfObj.funcID +  "\"" });
 
 
 
@@ -530,13 +530,13 @@ public class CodeParser {
 
                                     String[] tempvars_ArgvList = SfObj4.Argvs;
                                     for (String StrObj : tempvars_ArgvList){
-                                        this.writeCode(new String[]{"set",StrObj + "=args@function#" + SfObj4.funcID,line_spilt[i1]});
+                                        this.writeCode(new String[]{"set",StrObj + "=args@function=" + SfObj4.funcID,line_spilt[i1]});
                                         i1++;
 
                                     }
 
 
-                                    this.writeCode(new String[]{"jump","jumpLine@function#" + SfObj4.funcID,"always","null","null"});
+                                    this.writeCode(new String[]{"jump","jumpLine@function=" + SfObj4.funcID,"always","null","null"});
 
                                     this.writeCode(new String[]{"set","@null","null"});
 
@@ -575,7 +575,7 @@ public class CodeParser {
                                     exception(file,"You should not return here ! ",null);
                                 }*/
                                 /*if(SfObj5 != null){
-                                    this.writeCode(new String[]{"jump", String.valueOf(SfObj5.returnLine) + "=return@function#" + SfObj5.funcID,"always","null","null"});
+                                    this.writeCode(new String[]{"jump", String.valueOf(SfObj5.returnLine) + "=return@function=" + SfObj5.funcID,"always","null","null"});
                                     SfObj5.returnLine ++;
 
                                 }*/
@@ -638,13 +638,13 @@ public class CodeParser {
                 String[] temp3 = SfObj3.Argvs;
                 for (String temp4 : temp3){
                     //System.out.println(">>>>>>>>>>>>>>>>" + temp4);
-                    String temp5 = temp4 + "=args@function#" + SfObj3.funcID;
+                    String temp5 = temp4 + "=args@function=" + SfObj3.funcID;
                     String temp6 = "@P=" + temp4;
                     this.compiledCodeData = this.compiledCodeData.replaceAll(temp6, temp5);
                 }
-                String temp7 =  "jumpLine@function#" + SfObj3.funcID;
+                String temp7 =  "jumpLine@function=" + SfObj3.funcID;
 
-                this.compiledCodeData = this.compiledCodeData.replaceAll(temp7, String.valueOf(Save_compiledLineNow + SfObj3.mainJumpIn + 3));
+                this.compiledCodeData = this.compiledCodeData.replaceAll(temp7, String.valueOf(Save_compiledLineNow + SfObj3.mainJumpIn + SfObj3.Argvs.length + 1));
 
 
 
