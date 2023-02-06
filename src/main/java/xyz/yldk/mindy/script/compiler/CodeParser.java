@@ -1,8 +1,12 @@
 package xyz.yldk.mindy.script.compiler;
 
 import xyz.yldk.mindy.script.objects.ScriptFunction;
+import xyz.yldk.mindy.script.pixel.PixelImageTools;
 import xyz.yldk.mindy.script.tools.StringTools;
 
+import javax.imageio.ImageIO;
+import javax.imageio.ImageReader;
+import java.awt.image.BufferedImage;
 import java.io.*;
 import java.nio.file.Path;
 import java.util.ArrayList;
@@ -58,6 +62,8 @@ public class CodeParser {
     
     public int returnJumpLine = 0;
 
+    public List<String> CodeStringList = new ArrayList<>();
+
 
 
 
@@ -90,9 +96,13 @@ public class CodeParser {
             Stream<String> linesAll = br.lines();
             List<String> strList = linesAll.toList();
 
+            this.CodeStringList = strList;
+
             int allLinesSize = strList.size();
 
             for (String thisLine : strList) {
+                this.lineNow++;
+
                 String temp1 = thisLine.trim();
                 String[] line_spilt = temp1.split(" ");
 
@@ -587,7 +597,91 @@ public class CodeParser {
                             }
 
 
-                        } else {
+                        } else if(startString.equals("pixel")) {
+                            int image_x;
+                            int image_y;
+                            try {
+                                image_x = Integer.parseInt(line_spilt[1]);
+                                image_y = Integer.parseInt(line_spilt[2]);
+
+                            } catch (NumberFormatException ex) {
+                                exception(file, "Invalid number! Cannot convert to integer!", ex);
+                                return;
+                            }
+
+                            String displayBuildingName = line_spilt[3];
+                            String imagePath = StringTools.Array2String(line_spilt, " ", true, 4, true);
+
+                            //System.out.println(imagePath);
+
+                            File imageFileObj = new File(imagePath);
+                            if (!imageFileObj.exists()) {
+                                exception(file, "Image file does not exist! Unable to get image content!", null);
+                                return;
+                            }
+
+                            BufferedImage imageReaderObj = ImageIO.read(imageFileObj);
+
+                            int image_width = imageReaderObj.getWidth();
+                            int image_high = imageReaderObj.getHeight();
+
+
+                            if ((image_width != image_x) || (image_high != image_y)){
+                                exception(file,"The size of the picture file does not match the entered value!",null);
+                                return;
+                            }
+
+                            int xNow = 0;
+                            int yNow = 0;
+
+
+                            xNow = image_width - 1;
+                            yNow = image_high - 1;
+
+
+                            //System.out.println(">>> " + Integer.toHexString(PixelImageTools.int2RGBArray(imageReaderObj.getRGB(0,0))[0]));
+                            //System.out.println(">>> " + PixelImageTools.int2RGBArray(imageReaderObj.getRGB(0,0))[0]);
+                            //System.out.println(">>> " + PixelImageTools.int2RGBArray(imageReaderObj.getRGB(0,0))[1]);
+                            //System.out.println(">>> " + PixelImageTools.int2RGBArray(imageReaderObj.getRGB(0,0))[2]);
+
+                            for (int i = 0; i < image_width; i++) {
+                                for (int i2 = 0; i2 < image_high; i2++) {
+                                    int R = PixelImageTools.int2RGBArray(imageReaderObj.getRGB(i,i2))[0];
+                                    int G = PixelImageTools.int2RGBArray(imageReaderObj.getRGB(i,i2))[1];
+                                    int B = PixelImageTools.int2RGBArray(imageReaderObj.getRGB(i,i2))[2];
+                                    String HexR = Integer.toHexString(R);
+                                    String HexG = Integer.toHexString(G);
+                                    String HexB = Integer.toHexString(B);
+                                    if(HexR.length() < 2){
+                                        HexR += "0";
+                                    }
+                                    if(HexG.length() < 2){
+                                        HexG += "0";
+                                    }
+                                    if(HexB.length() < 2){
+                                        HexB += "0";
+                                    }
+                                    this.writeCode(new String[]{"draw","color", String.valueOf(R) , String.valueOf(G) ,String.valueOf(B) ,"255" ,"0","0"});
+                                    this.writeCode(new String[]{"draw","rect",String.valueOf(xNow), String.valueOf(yNow) ,"1" ,"1" ,"0","0"});
+                                    yNow --;
+
+                                }
+                                yNow = image_high - 1;
+                                xNow --;
+                            }
+
+                            this.writeCode(new String[]{"drawflush",displayBuildingName});
+
+
+
+
+
+
+
+
+
+
+                        }else {
                             //String tempStr = StringTools.Array2String(line_spilt," ",false,0,true);
                             if("\n".equals(temp1) || "\r".equals(temp1) || "".equals(temp1)){
                                 continue;
@@ -602,7 +696,7 @@ public class CodeParser {
 
                 }
 
-                this.lineNow++;
+                //this.lineNow++;
 
 
             }
@@ -674,7 +768,7 @@ public class CodeParser {
 
 
         } catch (IndexOutOfBoundsException e){
-            exception(file,"Incorrect code format: missing parameter", e);
+            exception(file,"Incorrect code format: missing parameter (or Java Error)", e);
             return;
         }catch (Exception e) {
             exception(file,"Unknow Java Error", e);
@@ -717,9 +811,14 @@ public class CodeParser {
         System.out.println("At Line : " + String.valueOf(this.lineNow));
         System.out.println("At Compiled Code Line : " + String.valueOf(this.compiledLineNow));
         System.out.println("At Char : " + String.valueOf(this.charNow));
+        if(this.CodeStringList.size() >= 1){
+            System.out.println("At Code : " + this.CodeStringList.get(this.lineNow - 1));
+        }
+
         if(ex != null){
 
             System.out.println("Java Exception : " + ex.toString());
+            ex.printStackTrace();
 
         }
 
