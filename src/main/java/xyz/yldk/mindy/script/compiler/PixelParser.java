@@ -5,6 +5,7 @@ import xyz.yldk.mindy.script.pixel.PixelImageTools;
 import xyz.yldk.mindy.script.tools.StringTools;
 
 import javax.imageio.ImageIO;
+import java.awt.*;
 import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.FileOutputStream;
@@ -69,33 +70,27 @@ public class PixelParser extends CodeParser{
             this.c_CodeLineCount = 0;
             String CodeData = "";
 
+            //CodeData = this.writeCodePixel(CodeData,new String[]{"draw","clear","0", "0","0","0","0","0"});
+
+
+
+
 
 
             for (int w = 0; w < image_width; w++) {
 
                 for (int h = 0; h < image_high; h++) {
+                    Color color = new Color(imageReaderObj.getRGB(w,h));
+                    int R = color.getRed();
+                    int G = color.getGreen();
+                    int B = color.getBlue();
+                    int A = color.getAlpha();
 
 
 
 
-
-                    int R = PixelImageTools.int2RGBArray(imageReaderObj.getRGB(w,h))[0];
-                    int G = PixelImageTools.int2RGBArray(imageReaderObj.getRGB(w,h))[1];
-                    int B = PixelImageTools.int2RGBArray(imageReaderObj.getRGB(w,h))[2];
-                    String HexR = Integer.toHexString(R);
-                    String HexG = Integer.toHexString(G);
-                    String HexB = Integer.toHexString(B);
-                    if(HexR.length() < 2){
-                        HexR += "0";
-                    }
-                    if(HexG.length() < 2){
-                        HexG += "0";
-                    }
-                    if(HexB.length() < 2){
-                        HexB += "0";
-                    }
-                    CodeData = this.writeCodePixel(CodeData,new String[]{"draw","color", String.valueOf(R) , String.valueOf(G) ,String.valueOf(B) ,"255" ,"0","0"});
-                    CodeData = this.writeCodePixel(CodeData,new String[]{"draw","rect",String.valueOf(fW), String.valueOf(fH) ,"1" ,"1" ,"0","0"});
+                    CodeData = this.writeCodePixel(CodeData,new String[]{"draw","color", String.valueOf(R) , String.valueOf(G) ,String.valueOf(B) ,String.valueOf(A),"0","0"});
+                    CodeData = this.writeCodePixel(CodeData,new String[]{"draw","rect",String.valueOf(fW), String.valueOf(fH) ,"1", "1","0","0"});
 
 
                     this.c_CodeLineCount = this.c_CodeLineCount + 2;

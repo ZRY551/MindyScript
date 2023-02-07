@@ -4,6 +4,7 @@ import org.mozilla.javascript.Context;
 import org.mozilla.javascript.NativeJSON;
 import org.mozilla.javascript.Scriptable;
 import xyz.yldk.mindy.script.compiler.CodeParser;
+import xyz.yldk.mindy.script.compiler.PixelParser;
 import xyz.yldk.mindy.script.tools.StringTools;
 
 import javax.script.ScriptEngine;
@@ -86,7 +87,17 @@ public class Main {
 
                 } else if ("pixel".equals(args[0].toLowerCase())) {
                     System.out.println("BTEA: Pixel Mode is beta and have so many bug not fixed! ");
-                    return;
+
+                    PixelParser pp = new PixelParser(args[1],args[2]);
+                    //return;
+
+                    pp.runPixel();
+
+                    System.out.println("Compilation completed!");
+                    System.out.println("\n\n\n");
+                    System.exit(0);
+
+
 
 
                 } else {
